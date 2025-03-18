@@ -13,7 +13,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'role', // Ajout du champ rôle
+        'role', 
     ];
 
     protected $hidden = [
@@ -29,23 +29,22 @@ class User extends Authenticatable
         ];
     }
 
-    // Vérifier si l'utilisateur est un admin
     public function isAdmin()
     {
         return $this->role === 'admin';
     }
- public function books()
-{
-    return $this->hasMany(Book::class);
-}
-public function user()
-{
-    return $this->belongsTo(User::class);
-}
+    public function books()
+    {
+        return $this->hasMany(Book::class);
+    }
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 
-public function property()
-{
-    return $this->belongsTo(Property::class);
-}
+    public function property()
+    {
+        return $this->belongsTo(Property::class);
+    }
 
 }

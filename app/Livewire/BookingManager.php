@@ -13,6 +13,22 @@ class BookingManager extends Component
     public $start_date;
     public $end_date;
     public $showForm = false;
+    public $selectedHotel = null;
+    public $properties = [];
+    public $search = '';
+
+    protected $listeners = ['hotelSearchUpdated' => 'updateHotelList'];
+
+    public function updateHotelList($search = '')
+    {
+        $this->search = $search;
+        $this->properties = Property::where('name', 'like', '%' . $this->search . '%')->get();
+    }
+
+    public function mount()
+    {
+        $this->updateHotelList();
+    }
 
     protected $rules = [
         'property_id' => 'required|exists:properties,id',
@@ -20,23 +36,15 @@ class BookingManager extends Component
         'end_date' => 'required|date|after:start_date',
     ];
 
-
     public function showBookingForm($hotelId)
     {
-        if (!Auth::check()) {
-            return redirect()->route('login'); // Redirige vers la page de connexion
-        }
-
         $this->property_id = $hotelId;
+        $this->selectedHotel = Property::find($hotelId);
         $this->showForm = true;
     }
 
     public function bookProperty()
     {
-        if (!Auth::check()) {
-            return redirect()->route('login'); // Redirige si l'utilisateur essaie de tricher
-        }
-
         $this->validate();
 
         Book::create([
@@ -48,13 +56,19 @@ class BookingManager extends Component
 
         session()->flash('message', 'Réservation effectuée avec succès !');
 
-        $this->reset(['start_date', 'end_date', 'showForm']);
+        $this->reset(['start_date', 'end_date', 'showForm', 'selectedHotel']);
     }
 
-  public function render()
-{
-    return view('livewire.booking-manager', [
-        'properties' => Property::all(), // Passer la liste des propriétés à la vue
-    ]);
-}
+    public function closeBookingForm()
+    {
+        $this->showForm = false;
+        $this->selectedHotel = null;
+    }
+
+    public function render()
+    {
+        return view('livewire.booking-manager', [
+            'properties' => $this->properties
+        ]);
+    }
 }
